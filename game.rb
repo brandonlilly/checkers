@@ -14,18 +14,20 @@ class Game
   end
 
   def run
-    turn = 0
-
     board.setup
-
-    loop do
+    turn = 0
+    until over?
       current_player = players[turn % 2]
-      piece, move = current_player.play_turn(board)
+      current_player.play_turn(board)
       board.promote_pieces
       turn += 1
     end
   end
-  
+
+  def over?
+    false
+  end
+
 end
 
 if __FILE__ == $PROGRAM_NAME

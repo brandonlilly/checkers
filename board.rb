@@ -38,7 +38,7 @@ class Board
         str = tile.nil? ? "  " : "#{tile.render} "
         bg_color = (ri + ci).even? ? :white : :light_white
         bg_color = :light_yellow if highlights.include?([ri, ci])
-        bg_color = :magenta if [ri, ci] == selection
+        bg_color = :light_cyan if [ri, ci] == selection
         str.colorize(background: bg_color)
       end.join('')
     end

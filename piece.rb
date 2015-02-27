@@ -35,7 +35,6 @@ class Piece
     position.first == goal_row
   end
 
-
   def moves(board)
     attack_moves(board) || slide_moves(board)
   end
@@ -60,7 +59,7 @@ class Piece
          board.in_bounds?(attack_dest) &&
          enemy_piece?(board[slide_dest]) &&
          board[attack_dest].nil?
-        attack_moves << attack_dest if enemy_piece?(board[slide_dest]) && board[attack_dest].nil?
+        attack_moves << attack_dest
       end
     end
     attack_moves.empty? ? nil : attack_moves
@@ -68,11 +67,6 @@ class Piece
 
   def enemy_piece?(piece)
     !(piece.nil? || piece.color == color)
-  end
-
-  def move_diffs
-    return [[-1, 1], [1, 1], [-1, -1], [1, -1]] if king?
-    black? ? [[1, -1], [1, 1]] : [[-1, -1], [-1, 1]]
   end
 
   def perform_move(move, board)
@@ -88,6 +82,13 @@ class Piece
     @position = move
 
     attack
+  end
+
+  private
+
+  def move_diffs
+    return [[-1, 1], [1, 1], [-1, -1], [1, -1]] if king?
+    black? ? [[1, -1], [1, 1]] : [[-1, -1], [-1, 1]]
   end
 
 end

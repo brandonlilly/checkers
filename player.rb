@@ -37,8 +37,8 @@ class Player
 
   def get_move(piece, board)
     raise InvalidMoveError.new if piece.nil? || piece.color != color
-    p moves = piece.moves(board)
-    move = get_selection(board, moves << cursor)
+    moves = piece.moves(board)
+    move = get_selection(board, moves + [piece.position])
     raise InvalidMoveError.new unless moves.include?(move)
     raise InvalidMoveError.new if move == piece.position
     move
@@ -47,7 +47,6 @@ class Player
   def get_selection(board, highlights = [])
     loop do
       board.display(cursor, highlights)
-
       stroke = get_char
       case stroke
       when /[wasd]/
