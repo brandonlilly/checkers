@@ -29,22 +29,23 @@ class Board
   def in_bounds?(pos)
     x, y = pos
     raise "Invalid position x:#{x} y:#{y}" if x.nil? || y.nil?
-    x.between?(0, 8) && y.between?(0, 8)
+    x.between?(0, 7) && y.between?(0, 7)
   end
 
   def render(selection = nil, highlights = [])
     @grid.each_with_index.map do |row, ri|
       row.each_with_index.map do |tile, ci|
-        str = tile.nil? ? "   " : tile.render
+        str = tile.nil? ? "  " : "#{tile.render} "
         bg_color = (ri + ci).even? ? :white : :light_white
-        bg_color = :magenta if [ri, ci] == selection
         bg_color = :light_yellow if highlights.include?([ri, ci])
+        bg_color = :magenta if [ri, ci] == selection
         str.colorize(background: bg_color)
       end.join('')
     end
   end
 
   def display(selection = nil, highlights = [])
+    system "clear" or system "cls"
     puts '', render(selection, highlights), ''
   end
 
@@ -52,6 +53,10 @@ class Board
     pieces_arr = @grid.flatten.compact
     pieces_arr.select! { |piece| piece.color == color } unless color.nil?
     pieces_arr
+  end
+
+  def promote_pieces
+    pieces.each { |piece| piece.promote if piece.promotable? }
   end
 
 end

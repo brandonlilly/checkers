@@ -10,7 +10,8 @@ class Piece
 
   def render
     font_color = black? ? :black : :light_red
-    " ◉ ".colorize(color)
+    symbol = king? ? "♛" : "◉"
+    symbol.colorize(color)
   end
 
   def black?
@@ -25,46 +26,68 @@ class Piece
     @king
   end
 
-  def make_king
+  def promote
     @king = true
   end
 
+  def promotable?
+    goal_row = black? ? 7 : 0
+    position.first == goal_row
+  end
+
+
   def moves(board)
+    attack_moves(board) || slide_moves(board)
+  end
+
+  def slide_moves(board)
     slide_moves = []
+    x, y = position
+    move_diffs.each do |x_shift, y_shift|
+      slide_dest = [x + x_shift, y + y_shift]
+      slide_moves << slide_dest if board.in_bounds?(slide_dest) && board[slide_dest].nil?
+    end
+    slide_moves
+  end
+
+  def attack_moves(board)
     attack_moves = []
     x, y = position
-    # debugger
     move_diffs.each do |x_shift, y_shift|
       slide_dest = [x + x_shift, y + y_shift]
       attack_dest = [x + x_shift * 2, y + y_shift * 2]
-      if board.in_bounds?(slide_dest)
-        slide_moves << slide_dest if board[slide_dest].nil?
-        if board.in_bounds?(attack_dest) &&
-           enemy_piece?(board[slide_dest]) &&
-           board[attack_dest].nil?
-          attack_moves << attack_dest if enemy_piece?(board[slide_dest]) && board[attack_dest].nil?
-        end
+      if board.in_bounds?(slide_dest) &&
+         board.in_bounds?(attack_dest) &&
+         enemy_piece?(board[slide_dest]) &&
+         board[attack_dest].nil?
+        attack_moves << attack_dest if enemy_piece?(board[slide_dest]) && board[attack_dest].nil?
       end
     end
-
-    attack_moves.empty? ? slide_moves : attack_moves
+    attack_moves.empty? ? nil : attack_moves
   end
 
   def enemy_piece?(piece)
-    !piece.nil? && piece.color != color
+    !(piece.nil? || piece.color == color)
   end
 
   def move_diffs
-    return [[-1, 1], [1, 1], [-1, -1], [-1, 1]] if king?
+    return [[-1, 1], [1, 1], [-1, -1], [1, -1]] if king?
     black? ? [[1, -1], [1, 1]] : [[-1, -1], [-1, 1]]
   end
 
-  def perform_slide
+  def perform_move(move, board)
+    attack = false
+    mid = [(position.first + move.first) / 2, (position.last + move.last) / 2]
+    if enemy_piece?(board[mid])
+      board[mid] = nil
+      attack = true
+    end
 
-  end
+    board[move] = self
+    board[position] = nil
+    @position = move
 
-  def perform_jump
-
+    attack
   end
 
 end

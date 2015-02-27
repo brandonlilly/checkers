@@ -1,42 +1,74 @@
 require_relative 'keypress'
 
+class InvalidMoveError < StandardError; end
+
+
 class Player
-  attr_reader :color, :selection
+  attr_reader :color, :cursor
   include Keypress
 
   def initialize(color)
     @color = color
-    @selection = [0, 0]
+    @cursor = [0, 0]
   end
 
   def play_turn(board)
-    stroke = get_char
-    case stroke
-    when /[wasd]/
-      move_selection(stroke, board)
-    end
-    puts stroke
 
-    moves = []
-    piece = board[selection]
-    if board.pieces(color).include?(piece)
-      moves = piece.moves(board)
+    begin
+      selection = get_selection(board)
+      selected_piece = board[selection]
+      move = get_move(selected_piece, board)
+    rescue InvalidMoveError
+      retry
     end
 
-    board.display(selection, moves)
+    attack = selected_piece.perform_move(move, board)
+
+    while attack && selected_piece.attack_moves(board)
+      begin
+        move = get_move(selected_piece, board)
+        attack = selected_piece.perform_move(move, board)
+      rescue InvalidMoveError
+        retry
+      end
+    end
+
   end
 
-  def move_selection(stroke, board)
+  def get_move(piece, board)
+    raise InvalidMoveError.new if piece.nil? || piece.color != color
+    p moves = piece.moves(board)
+    move = get_selection(board, moves << cursor)
+    raise InvalidMoveError.new unless moves.include?(move)
+    raise InvalidMoveError.new if move == piece.position
+    move
+  end
+
+  def get_selection(board, highlights = [])
+    loop do
+      board.display(cursor, highlights)
+
+      stroke = get_char
+      case stroke
+      when /[wasd]/
+        move_cursor(stroke, board)
+      when " "
+        return cursor
+      end
+    end
+  end
+
+  def move_cursor(stroke, board)
     offsets = {
       'w' => [-1,0],
       'a' => [0,-1],
       's' => [1, 0],
       'd' => [0, 1]
     }
-    x, y = @selection
+    x, y = cursor
     x_shift, y_shift = offsets[stroke]
     pos = [x + x_shift, y + y_shift]
-    @selection = pos if board.in_bounds?(pos)
+    @cursor = pos if board.in_bounds?(pos)
   end
 
 end

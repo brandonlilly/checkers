@@ -11,7 +11,6 @@ class Game
   def initialize(player1, player2)
     @players = [player1, player2]
     @board = Board.new
-
   end
 
   def run
@@ -21,13 +20,12 @@ class Game
 
     loop do
       current_player = players[turn % 2]
-
-      current_player.play_turn(board)
-      # turn += 1
+      piece, move = current_player.play_turn(board)
+      board.promote_pieces
+      turn += 1
     end
-
   end
-
+  
 end
 
 if __FILE__ == $PROGRAM_NAME
